@@ -6,12 +6,13 @@ from tensorflow.keras.models import load_model
 class HandDetection:
     def __init__(self):
         #loading the model and label encoder
+        self.result_hands_frame = None
         self.model = load_model('handshape_feature_model_gold')
         label_encoder = joblib.load("label_encoder_gold.pkl")
         self.labels = label_encoder.classes_
         # loading and defining mediapipe
         mp_hands = mp.solutions.hands
-        self.hands = mp_hands.Hands(False, max_num_hands=1, min_detection_confidence=0.4) #, min_tracking_confidence=0.5  
+        self.hands = mp_hands.Hands(False, max_num_hands=1, min_detection_confidence=0.5) #, min_tracking_confidence=0.5  
         self.list_letters_detection = {}
 
     def getHandResult(self, image):
@@ -26,7 +27,7 @@ class HandDetection:
             h, w, _ = image.shape
             x_pixel = int(index_finger_tip.x * w)
             y_pixel = int(index_finger_tip.y * h)
-            return (x_pixel, y_pixel)
+            return x_pixel, y_pixel
         return None
 
     def predict(self, image):
@@ -52,12 +53,12 @@ class HandDetection:
 
     def getMostFrequency(self, frequencies_letter = 0.7):
 
-        if(self.list_letters_detection):
+        if self.list_letters_detection:
             max_key = max(self.list_letters_detection, key=self.list_letters_detection.get)   
             is_frequency = self.list_letters_detection[max_key]/sum(self.list_letters_detection.values()) > frequencies_letter
             self.list_letters_detection = {}
-            return (max_key, is_frequency)
-        return("", 0)
+            return max_key, is_frequency
+        return "", 0
 
 # extract features of hand landmarks
 def extract_features(landmarks):
@@ -130,7 +131,7 @@ def extract_features(landmarks):
     ]
 
     # binary value
-    thumb_between_index_middle = (lm[4] < lm[6] and lm[4] > lm[10]) or (lm[4] > lm[6] and lm[4] < lm[10])    
+    thumb_between_index_middle = (lm[6] > lm[4] > lm[10]) or (lm[6] < lm[4] < lm[10])
     index_middle_dx = lm[12][0] - lm[8][0]
     crossing_sign = np.sign(index_middle_dx)
     crossing_distance = abs(index_middle_dx)

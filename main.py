@@ -11,12 +11,12 @@ suggestions = {}
 # global variables for subtitles
 subtitles = ""
 length_chars_subtitles = 35
-frequencies_letter = 0.8 # between 0.01 to 0.99 
+frequencies_letter = 0.7 # between 0.01 to 0.99 
 current_word = ""
 min_len_current_word = 3
 
 # global variables for detection 
-time_duration_detect = 1.5
+time_duration_detect = 1.7
 start_time_detection = time.time()
 
 # global variables for ui
@@ -53,7 +53,7 @@ def update_subtitles():
 
 def add_word_to_subtitles (word):
   global subtitles
-  if(word):
+  if word :
     index_first_letter_last_word = subtitles.rstrip().rfind(" ") +1
     subtitles = subtitles [:index_first_letter_last_word]
     subtitles += word.upper()
@@ -69,8 +69,8 @@ while True:
   frame = ui.flip(frame)
   
   if not is_process_box:
-    ui.set_current_letter(hand_detection.predict(frame))
-  
+    ui.set_current_letter(hand_detection.predict(ui.convert_to_rgb(frame)))
+
   if current_time - start_time_detection >= time_duration_detect:
     update_subtitles()
 
@@ -85,7 +85,7 @@ while True:
   ui.set_subtitles(subtitles)
   frame, is_process_box, selected_word = ui.refresh(frame)
 
-  if(selected_word):
+  if selected_word:
     add_word_to_subtitles (selected_word)
     selected_word = ""
     suggestions = {}

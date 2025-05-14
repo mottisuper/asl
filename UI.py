@@ -3,18 +3,12 @@ import time
 
 #global variables
 blink_speed = 0.5
-wait_time_box = 0.03
+wait_time_box = 0.10
 width_process_box = 5
 
 class UI:
   def __init__ (self):
     # running real time video and loading frames, the screen is resized also in maximum of window's size
-    self.cap = cv2.VideoCapture(0)
-    self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-    self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
-    cv2.namedWindow("FRAME", cv2.WINDOW_NORMAL)
-    cv2.resizeWindow("FRAME", 640, 480)
-    cv2.setWindowProperty("FRAME", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_NORMAL)
     self.current_letter = ""
     self.subtitles = ""
     self.suggestions = {}
@@ -23,17 +17,41 @@ class UI:
     self.current_box = None
     self.boxes = []
     self.last_time_box = time.time()
+    self.height_frame = None
+    self.width_frame = None
+    self.width_main_screen = None
+    self.width_current_letter = None
+    self.width_subtitles = None
+    self.width_box = None
+    self.height_main_screen = None
+    self.height_current_letter = None
+    self.height_subtitles = None
+    self.height_box = None
+    self.top_left_main_screen = None
+    self.top_left_current_letter = None
+    self.top_left_subtitles = None
+    self.bottom_right_main_screen = None
+    self.bottom_right_current_letter = None
+    self.bottom_right_subtitles = None
+    self.cap = cv2.VideoCapture(0)
+    self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+    self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+    cv2.namedWindow("FRAME", cv2.WINDOW_NORMAL)
+    cv2.resizeWindow("FRAME", 640, 480)
+    cv2.setWindowProperty("FRAME", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_NORMAL)
 
-  def show(self, title, frame):
+  @staticmethod
+  def show(title, frame):
     cv2.imshow(title, frame)
 
   def read(self):
     return self.cap.read()
-  
-  def flip(self, frame):
+  @staticmethod
+  def flip(frame):
     return cv2.flip(frame, 1)
-  
-  def click(self):
+
+  @staticmethod
+  def click():
     key = cv2.waitKey(1) 
     if  key == ord('q'):
       return 'q' 
@@ -49,6 +67,10 @@ class UI:
   def set_subtitles(self, subtitles):
     self.subtitles = subtitles
 
+  @staticmethod
+  def convert_to_rgb(frame):
+    return cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
   def set_index_loc(self,  index_loc):
       if index_loc is not None:
         x_index_finger_tip = index_loc[0]
@@ -62,10 +84,8 @@ class UI:
                       "height": self.height_box, 
                       "top_left": top_left,
                       "bottom_right": bottom_right})
-          if (x_index_finger_tip >= self.boxes[i]["top_left"][0] and
-              x_index_finger_tip <= self.boxes[i]["bottom_right"][0] and
-              y_index_finger_tip >= self.boxes[i]["top_left"][1] and
-              y_index_finger_tip <= self.boxes[i]["bottom_right"][1]):
+          if (self.boxes[i]["top_left"][0] <= x_index_finger_tip <= self.boxes[i]["bottom_right"][0] and
+                  self.boxes[i]["top_left"][1] <= y_index_finger_tip <= self.boxes[i]["bottom_right"][1]):
             self.is_index_in_box = True
             self.current_box = i
             return True
@@ -146,7 +166,7 @@ class UI:
     #showing boxes
     current_time_box = time.time()
     
-    if(len(self.suggestions)>0):
+    if len(self.suggestions)>0:
       for i in range(0,len(self.suggestions)):
         # showing semi-transparent blue background for box
         overlay = frame.copy()
