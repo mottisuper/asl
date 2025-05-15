@@ -6,13 +6,15 @@ from tensorflow.keras.models import load_model
 class HandDetection:
     def __init__(self):
         #loading the model and label encoder
+        self.hand_landmarks = None
         self.result_hands_frame = None
         self.model = load_model('handshape_feature_model_gold')
         label_encoder = joblib.load("label_encoder_gold.pkl")
         self.labels = label_encoder.classes_
         # loading and defining mediapipe
-        mp_hands = mp.solutions.hands
-        self.hands = mp_hands.Hands(False, max_num_hands=1, min_detection_confidence=0.5) #, min_tracking_confidence=0.5  
+        self.mp_hands = mp.solutions.hands
+        self.hands = self.mp_hands.Hands(False, max_num_hands=1, min_detection_confidence=0.5) #, min_tracking_confidence=0.5
+        self.mp_draw = mp.solutions.drawing_utils
         self.list_letters_detection = {}
 
     def getHandResult(self, image):
@@ -22,8 +24,8 @@ class HandDetection:
         self.result_hands_frame =self.hands.process(image)
 
         if self.result_hands_frame.multi_hand_landmarks:
-            hand_landmarks = self.result_hands_frame.multi_hand_landmarks[0]
-            index_finger_tip = hand_landmarks.landmark[8]
+            self.hand_landmarks = self.result_hands_frame.multi_hand_landmarks[0]
+            index_finger_tip = self.hand_landmarks.landmark[8]
             h, w, _ = image.shape
             x_pixel = int(index_finger_tip.x * w)
             y_pixel = int(index_finger_tip.y * h)
