@@ -127,7 +127,7 @@ def extract_features(landmarks):
     ]
 
     # directions - float values
-    dirctions = [
+    directions = [
         np.degrees( calc_angle(lm[5], lm[6], lm[8])),
         np.degrees((vector_angle_y(lm[6], lm[8]) + vector_angle_y(lm[10], lm[12])) / 2)
     ]
@@ -143,7 +143,7 @@ def extract_features(landmarks):
         distances +
         angles +
         relative_positions+
-        dirctions+
+        directions+
         [thumb_between_index_middle]+
         [index_middle_dx]+
         [crossing_sign]+
